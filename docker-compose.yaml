@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  worker:
+    build: ./worker
+    volumes:
+      - ./reports:/reports
+      - ./repos:/repos
+    depends_on:
+      rabbit:
+        condition: service_started
+
+  rabbit:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  uwsgi:
+    build: ./uswgi
+    working_dir: /uswgi
+    ports:
+      - 8000:8000
+    depends_on:
+      rabbit:
+        condition: service_started
+    command: python3 manage.py runserver 0.0.0.0:8000 --noreload
